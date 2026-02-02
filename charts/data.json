@@ -1,0 +1,92 @@
+{
+  "rudra-iitm": {
+    "MERGED": 0,
+    "OPEN": 1,
+    "CLOSED": 0
+  },
+  "KamandPrompt": {
+    "MERGED": 6,
+    "OPEN": 0,
+    "CLOSED": 7
+  },
+  "google-deepmind": {
+    "MERGED": 0,
+    "OPEN": 2,
+    "CLOSED": 0
+  },
+  "langchain-ai": {
+    "MERGED": 2,
+    "OPEN": 5,
+    "CLOSED": 0
+  },
+  "psf": {
+    "MERGED": 0,
+    "OPEN": 1,
+    "CLOSED": 0
+  },
+  "dart-lang": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "pallets": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "tokio-rs": {
+    "MERGED": 1,
+    "OPEN": 0,
+    "CLOSED": 0
+  },
+  "foss42": {
+    "MERGED": 7,
+    "OPEN": 6,
+    "CLOSED": 4
+  },
+  "harshyadav028": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "beingvirus": {
+    "MERGED": 6,
+    "OPEN": 0,
+    "CLOSED": 5
+  },
+  "firstcontributions": {
+    "MERGED": 1,
+    "OPEN": 0,
+    "CLOSED": 0
+  },
+  "sdmg15": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "TheAlgorithms": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "sntc-tech": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "Aman071106": {
+    "MERGED": 10,
+    "OPEN": 0,
+    "CLOSED": 0
+  },
+  "electric-capital": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
+  "Sachitbansal": {
+    "MERGED": 2,
+    "OPEN": 0,
+    "CLOSED": 0
+  }
+}
