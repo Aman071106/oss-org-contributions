@@ -1,82 +1,150 @@
 import json
-import matplotlib.pyplot as plt
+import math
+import requests
+import base64
+import os
 
-# 1. Load Data
-with open("charts/data.json") as f:
-    data = json.load(f)
+# --- CONFIGURATION ---
+YOUR_USERNAME = "Aman071106"
+OUTPUT_FILE = "charts/org_contributions.svg"
+EXCLUDED_ORGS = ["rudra-iitm", "Sachitbansal", "beingvirus", "firstcontributions", YOUR_USERNAME]
+MAX_ORGS = 8  # Keep this between 6-8 so it doesn't look crowded
 
-# 2. Filter & Sort Data
-YOUR_USERNAME = "Aman071106" 
-if YOUR_USERNAME in data:
-    del data[YOUR_USERNAME]
+# --- STYLING (Cyberpunk / Dark Mode) ---
+COLOR_BG = "transparent" # Transparent background
+COLOR_LINE = "#30363d"   # Dark grey for connector lines
+COLOR_MERGED = "#a371f7" # Neon Purple
+COLOR_OPEN = "#3fb950"   # Neon Green
+TEXT_COLOR = "#c9d1d9"   # GitHub Grey
 
-# Filter: Keep only orgs where you have MERGED or OPEN PRs
-# (We ignore 'CLOSED' counts completely for filtering now)
-active_orgs = {
-    k: v for k, v in data.items() 
-    if v["MERGED"] > 0 or v["OPEN"] > 0
-}
+def fetch_image_as_base64(url):
+    """Downloads an image and converts it to base64 for embedding."""
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            encoded = base64.b64encode(response.content).decode('utf-8')
+            return f"data:image/png;base64,{encoded}"
+    except:
+        pass
+    return "" # Return empty if fails
 
-# Sort: Highest MERGED count first, then OPEN count
-sorted_orgs = sorted(
-    active_orgs.keys(), 
-    key=lambda x: (active_orgs[x]["MERGED"], active_orgs[x]["OPEN"]), 
-    reverse=True
-)
+def create_circular_clip_path(id_name, x, y, r):
+    """Creates a circular clip path def for avatars."""
+    return f"""
+    <clipPath id="{id_name}">
+        <circle cx="{x}" cy="{y}" r="{r}" />
+    </clipPath>
+    """
 
-# Limit to Top 10
-sorted_orgs = sorted_orgs[:10]
+def generate_svg():
+    # 1. Load Data
+    with open("charts/data.json") as f:
+        data = json.load(f)
 
-orgs = sorted_orgs
-merged = [active_orgs[o]["MERGED"] for o in orgs]
-open_prs = [active_orgs[o]["OPEN"] for o in orgs]
+    # 2. Filter & Sort
+    active_orgs = {
+        k: v for k, v in data.items() 
+        if k not in EXCLUDED_ORGS 
+        and (v["MERGED"] > 0 or v["OPEN"] > 0)
+    }
 
-# 3. Theme Settings (GitHub Dark)
-plt.style.use('dark_background')
-plt.rcParams['text.color'] = '#c9d1d9'
-plt.rcParams['axes.labelcolor'] = '#c9d1d9'
-plt.rcParams['xtick.color'] = '#8b949e'
-plt.rcParams['ytick.color'] = '#8b949e'
-plt.rcParams['font.family'] = 'sans-serif'
+    # Sort by total activity
+    sorted_orgs = sorted(
+        active_orgs.keys(), 
+        key=lambda x: (active_orgs[x]["MERGED"], active_orgs[x]["OPEN"]), 
+        reverse=True
+    )[:MAX_ORGS]
 
-fig, ax = plt.subplots(figsize=(10, 6))
+    # 3. Setup Layout
+    width = 800
+    height = 500
+    center_x = width / 2
+    center_y = height / 2
+    radius = 180  # Distance from center to orgs
+    
+    # User Avatar Size
+    user_r = 40
+    # Org Avatar Size
+    org_r = 25
 
-# Transparent Background
-fig.patch.set_alpha(0.0) 
-ax.patch.set_alpha(0.0)
+    # 4. Fetch User Avatar
+    user_img_url = f"https://github.com/{YOUR_USERNAME}.png"
+    user_b64 = fetch_image_as_base64(user_img_url)
 
-# 4. Plotting (Only Merged and Open)
-bar_width = 0.6
+    # Start SVG
+    svg_content = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        f'<style>.text {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; fill: {TEXT_COLOR}; font-weight: 600; }} .sub {{ font-size: 10px; font-weight: 400; }}</style>',
+        '<defs>'
+    ]
 
-# Layer 1: Merged (Purple)
-p1 = plt.bar(orgs, merged, width=bar_width, label="Merged", color="#8957e5", edgecolor='#8957e5')
+    # Add items to main content list
+    main_content = []
 
-# Layer 2: Open (Green) - Stacked on top of Merged
-p2 = plt.bar(orgs, open_prs, width=bar_width, bottom=merged, label="Open", color="#238636", edgecolor='#238636')
+    # Draw Central Hub (User)
+    main_content.append(f'<circle cx="{center_x}" cy="{center_y}" r="{user_r + 4}" fill="#21262d" stroke="#30363d" stroke-width="2" />')
+    
+    svg_content.append(create_circular_clip_path("user-clip", center_x, center_y, user_r))
+    main_content.append(f'<image href="{user_b64}" x="{center_x - user_r}" y="{center_y - user_r}" width="{user_r*2}" height="{user_r*2}" clip-path="url(#user-clip)" />')
 
-# 5. Styling
-plt.xticks(rotation=45, ha="right", fontsize=10, weight='bold')
-plt.yticks(fontsize=10)
-plt.ylabel("Pull Requests", fontsize=12, weight='bold')
-plt.title("Top External OSS Contributions", fontsize=16, weight='bold', pad=20)
+    # 5. Loop through Orgs
+    num_orgs = len(sorted_orgs)
+    
+    for i, org_name in enumerate(sorted_orgs):
+        stats = active_orgs[org_name]
+        merged = stats["MERGED"]
+        _open = stats["OPEN"]
+        
+        # Calculate Angle (distribute evenly)
+        # We shift by -math.pi/2 to start at the top (12 o'clock)
+        angle = (2 * math.pi * i / num_orgs) - (math.pi / 2)
+        
+        # Org Coords
+        org_x = center_x + radius * math.cos(angle)
+        org_y = center_y + radius * math.sin(angle)
 
-# Clean Borders
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-ax.spines['bottom'].set_color('#30363d')
-ax.spines['left'].set_color('#30363d')
+        # Draw Connector Line
+        # We draw dashed lines if no merged PRs, solid if merged exist
+        stroke_dash = "" if merged > 0 else 'stroke-dasharray="5,5"'
+        line_color = COLOR_MERGED if merged > 0 else COLOR_OPEN
+        
+        main_content.append(f'<line x1="{center_x}" y1="{center_y}" x2="{org_x}" y2="{org_y}" stroke="{COLOR_LINE}" stroke-width="2" {stroke_dash} />')
+        
+        # Org Avatar Background circle
+        main_content.append(f'<circle cx="{org_x}" cy="{org_y}" r="{org_r + 3}" fill="#0d1117" stroke="{line_color}" stroke-width="2" />')
 
-# Gridlines
-ax.yaxis.grid(True, color='#30363d', linestyle='--', linewidth=0.5, alpha=0.5)
-ax.set_axisbelow(True)
+        # Fetch Org Image
+        org_img_url = f"https://github.com/{org_name}.png"
+        org_b64 = fetch_image_as_base64(org_img_url)
+        
+        clip_id = f"clip-{i}"
+        svg_content.append(create_circular_clip_path(clip_id, org_x, org_y, org_r))
+        main_content.append(f'<image href="{org_b64}" x="{org_x - org_r}" y="{org_y - org_r}" width="{org_r*2}" height="{org_r*2}" clip-path="url(#{clip_id})" />')
 
-# Legend
-plt.legend(frameon=False, loc='upper right', fontsize=10)
+        # Add Stats Badge below org
+        # Offset text slightly based on position to avoid overlapping the line
+        text_y = org_y + org_r + 20
+        
+        # Create a stats string
+        stat_text = ""
+        if merged > 0:
+            stat_text += f'<tspan fill="{COLOR_MERGED}">● {merged}</tspan> '
+        if _open > 0:
+            stat_text += f'<tspan fill="{COLOR_OPEN}">● {_open}</tspan>'
+            
+        main_content.append(f'<text x="{org_x}" y="{text_y}" text-anchor="middle" class="text" font-size="12">{org_name}</text>')
+        main_content.append(f'<text x="{org_x}" y="{text_y + 15}" text-anchor="middle" class="text sub">{stat_text}</text>')
 
-plt.tight_layout()
+    # Close tags
+    svg_content.append('</defs>')
+    svg_content.extend(main_content)
+    svg_content.append('</svg>')
 
-# 6. Save
-plt.savefig("charts/org_contributions.svg", transparent=True, bbox_inches='tight')
-plt.close()
+    # Write File
+    with open(OUTPUT_FILE, "w") as f:
+        f.write("".join(svg_content))
 
-print(f"Chart generated (Closed PRs excluded) for {len(orgs)} organizations.")
+    print(f"Generated Hub-and-Spoke diagram for {num_orgs} orgs.")
+
+if __name__ == "__main__":
+    generate_svg()
