@@ -1,7 +1,7 @@
 {
   "google-gemini": {
     "MERGED": 0,
-    "OPEN": 1,
+    "OPEN": 3,
     "CLOSED": 2
   },
   "rudra-iitm": {
