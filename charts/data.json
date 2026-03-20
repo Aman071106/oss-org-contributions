@@ -21,8 +21,8 @@
   },
   "langchain-ai": {
     "MERGED": 2,
-    "OPEN": 5,
-    "CLOSED": 0
+    "OPEN": 0,
+    "CLOSED": 5
   },
   "psf": {
     "MERGED": 0,
