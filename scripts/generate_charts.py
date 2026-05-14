@@ -43,7 +43,7 @@ def generate_svg():
     active_orgs = {
         k: v for k, v in data.items() 
         if k not in EXCLUDED_ORGS 
-        and (v["MERGED"] > 0 or v["OPEN"] > 0)
+        and v["MERGED"] > 0
     }
 
     sorted_orgs = sorted(
