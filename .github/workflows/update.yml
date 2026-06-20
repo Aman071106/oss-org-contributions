@@ -2,13 +2,11 @@ name: Update Org Contribution Charts
 
 on:
   schedule:
-    - cron: "0 2 * * *"   # daily
+    - cron: "0 2 * * 0"   # sunday runs
   workflow_dispatch:
 
-# --- ADD THIS BLOCK ---
 permissions:
   contents: write
-# ----------------------
 
 jobs:
   update:
