@@ -1,4 +1,9 @@
 {
+  "PrefectHQ": {
+    "MERGED": 0,
+    "OPEN": 0,
+    "CLOSED": 1
+  },
   "google-gemini": {
     "MERGED": 0,
     "OPEN": 0,
