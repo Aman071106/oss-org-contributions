@@ -1,8 +1,13 @@
 {
-  "PrefectHQ": {
+  "openclaw": {
     "MERGED": 0,
     "OPEN": 0,
     "CLOSED": 1
+  },
+  "PrefectHQ": {
+    "MERGED": 1,
+    "OPEN": 0,
+    "CLOSED": 0
   },
   "google-gemini": {
     "MERGED": 0,
